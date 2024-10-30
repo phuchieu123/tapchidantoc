@@ -1,0 +1,879 @@
+<script>
+  // Tạo một thẻ link để thêm Font Awesome
+  var link = document.createElement("link");
+  link.href =
+    "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css";
+  link.rel = "stylesheet";
+
+  // Thêm thẻ link vào phần <head> của tài liệu
+  document.head.appendChild(link);
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<!-- Thư viện Page Flip -->
+<script src="https://cdn.jsdelivr.net/npm/page-flip/dist/js/page-flip.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js"></script>
+<script>
+  $(".container_flibook").hide();
+</script>
+<style>
+  /* Khung chứa flipbook */
+  #flipbook {
+    width: 100vw;
+    /* hoặc kích thước phù hợp với file PDF của bạn */
+    height: 100vh;
+    /* hoặc kích thước cố định khác */
+    margin: 0 auto;
+    /* Đảm bảo flipbook luôn ở giữa */
+    overflow: hidden;
+    /* Ngăn các phần không cần thiết vượt ra ngoài *
+      /* box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); */
+    background-color: #ffffff;
+  }
+
+  /* Các trang bên trong flipbook */
+  .page {
+    width: 100%;
+    height: 100%;
+    margin: 0 auto;
+    cursor: grab;
+  }
+ 
+  .page img {
+    width: 80% !important;
+    margin-top: 20px;
+  /* margin-left: 100px; */
+  }
+  .page:nth-child(even) img{
+    margin-left:  19%;
+  }
+  /* Đảm bảo ảnh không bị méo và vỡ */
+
+  /* Giao diện điều hướng */
+  .navigation {
+    border: 1px solid chocolate;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    background-color: #f7f7f7;
+    width: auto;
+    display: flex;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 5px;
+    margin: 10px auto;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+
+  .icon_navigation i:hover {
+    color: #005f7a;
+  }
+
+  .icon_navigation:disabled {
+    /* cursor: not-allowed; */
+  }
+
+  .page-info {
+    font-size: 16px;
+    display: inline-block;
+    margin: 0 15px;
+  }
+
+  .stf__block {
+    background-color: rgba(213, 203, 179, 0.833);
+  }
+  .flipbook_click_back:hover {
+    color: #ffffff !important;
+    background-color: #888 !important;
+  }
+  .container1 {
+    display: block;
+  }
+  .loading {
+    display: flex; /* Khi cần hiển thị loading */
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    color: black;
+    position: fixed;
+    z-index: 99999;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* Màn hình nền loading */
+  #loading-screen {
+    position: fixed;
+    z-index: 9999;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-color: rgb(255, 255, 255); /* Màn hình nền trong suốt */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #screen_an_pham {
+    height: auto;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #053c58;
+    padding: 10px;
+  }
+
+  .heading_ket_qua_an_pham {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .an_pham {
+    width: 33%;
+  }
+
+  .button_an_pham {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+  }
+
+  .button_an_pham button {
+    height: 48px;
+    line-height: 48px;
+    display: block;
+    text-align: center;
+    font-size: 1.125rem;
+    padding: 0 40px;
+    margin: 0 5px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .button_show_an_pham {
+    padding: 0px;
+    border: none;
+    background: #e90606;
+    border-radius: 0px;
+    -webkit-border-radius: 0px;
+    font-size: inherit;
+  }
+
+  .button_show_screen {
+    border: #e90606 1px solid;
+    background: no-repeat;
+  }
+  .ket_qua_nghien_cuu {
+    width: 67%;
+  }
+
+  .list_research_results {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .list_research_results h4 {
+    padding: 15px 10px;
+
+    width: 45%;
+    margin: 0 5px !important;
+    border-bottom: 1px solid #fff;
+  }
+  .list_research_results h4 a {
+    font-weight: 500;
+    line-height: 1.35;
+    font-size: 1.25rem;
+    color: #fff;
+    text-decoration: none;
+  }
+
+  .list_research_results_see_more {
+    font-family: "Roboto", "Arial", sans-serif;
+    font-size: 1.25rem;
+    font-weight: 400;
+    letter-spacing: 1.2px;
+    text-align: left;
+    color: #fff;
+    outline: none;
+    zoom: 1;
+    line-height: 1.5;
+    text-align: justify;
+  }
+  .spinner {
+    border: 8px solid #f3f3f3; /* Màu viền ngoài */
+    border-top: 8px solid #3498db; /* Màu viền trên */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite; /* Hiệu ứng xoay */
+  }
+
+
+  .icon_navigation{ padding: 0 10px;}
+  /* kết thúc css màn loading */
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Đảm bảo responsive trên các thiết bị nhỏ */
+  @media (max-width: 768px) {
+    #flipbook {
+      width: 90vw;
+      height: 70vh;
+    }
+
+    .navigation button {
+      padding: 10px 20px;
+      font-size: 14px;
+    }
+  }
+</style>
+
+<div id="loading-screen" class="loading" style="display: none">
+  <div class="spinner"></div>
+</div>
+
+<!-- Màn hình 1 -->
+<!-- <div id="screen_an_pham">
+  <div class="heading_ket_qua_an_pham">
+    <div class="ket_qua_nghien_cuu">
+      <h2 style="font-weight: 600; color: #fff">Kết quả nghiên cứu</h2>
+      <div class="list_research_results">
+        <h4>
+          <a
+            href="javascript:void(0);"
+            source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+            class="d-block _df_button"
+            rel="noopener"
+            title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+            df-parsed="true"
+            >Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng
+            4/2021</a
+          >
+        </h4>
+        <h4 class="title text-center">
+          <a
+            href="javascript:void(0);"
+            source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+            class="d-block _df_button"
+            rel="noopener"
+            title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+            df-parsed="true"
+            >Các Một số vấn đề dân tộc trong tình hình mới</a
+          >
+        </h4>
+        <h4 class="title text-center">
+          <a
+            href="javascript:void(0);"
+            source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+            class="d-block _df_button"
+            rel="noopener"
+            title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+            df-parsed="true"
+            >Các Vấn đề dân tộc trong tình hình mới</a
+          >
+        </h4>
+        <h4 class="title text-center">
+          <a
+            href="javascript:void(0);"
+            source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+            class="d-block _df_button"
+            rel="noopener"
+            title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+            df-parsed="true"
+            >Các Ngày hội toàn dân bầu cử quốc hội khóa XV và hội đồng nhân dân
+            các cấp</a
+          >
+        </h4>
+        <h4 class="title text-center">
+          <a
+            href="javascript:void(0);"
+            source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+            class="d-block _df_button"
+            rel="noopener"
+            title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+            df-parsed="true"
+            >Các Ngày hội toàn dân bầu cử quốc hội khóa XV và hội đồng nhân dân
+            các cấp
+          </a>
+        </h4>
+      </div>
+      <div class="list_research_results_see_more">
+        <h3>
+          <a
+            style="text-decoration: none; color: #fff"
+            href="https://tapchidantoc.lifetex.vn/web/uy-ban-dan-toc/an-pham"
+            >xem thêm</a
+          >
+        </h3>
+      </div>
+    </div>
+    <div class="an_pham">
+      <h2 style="font-weight: 600; color: #fff">Ấn phẩm</h2>
+      <div
+        onclick="loadPDF(`https://administrator.lifetek.vn:203/api/files/67123ca0656b0b02f55e2f51`)"
+        style="margin-left: 25px"
+      >
+        <img
+          src="https://administrator.lifetek.vn:203/api/files/671222cb656b0b02f55e2f4f"
+          alt="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+          class="img-thumbnail img-responsive"
+          style="display: block; width: 85%; height: auto"
+        />
+      </div>
+      <div class="button_an_pham">
+        <button
+          class="button_show_an_pham"
+          onclick="loadPDF(`https://administrator.lifetek.vn:203/api/files/67123ca0656b0b02f55e2f51`)"
+        >
+          xem chi tiết
+        </button>
+        <button class="button_show_screen">
+          <a
+            style="text-decoration: none; color: #fff"
+            href="https://tapchidantoc.lifetex.vn/web/uy-ban-dan-toc/an-pham"
+            >xem thêm</a
+          >
+        </button>
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<div class="container1">
+  <div class="sub-heading-content">
+    <h2 class="sub-heading-title title title-1">Kết quả nghiên cứu</h2>
+  </div>
+
+  <div class="list-view publication-no-items">
+    <div id="w0" class="row">
+      <div class="col-sm-6 col-md-3 item mb-5">
+        <div class="panel">
+          <div class="panel-body">
+            <div
+              id="image"
+              class="image text-center mb-1"
+              onclick="loadPDF(`https://administrator.lifetek.vn:203/api/files/67123ca0656b0b02f55e2f51`)"
+            >
+              <a
+                href="javascript:void(0);"
+                source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+                class="d-block _df_button"
+                rel="noopener"
+                title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                df-parsed="true"
+              >
+                <img
+                  src="https://administrator.lifetek.vn:203/api/files/671222cb656b0b02f55e2f4f"
+                  alt="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                  class="img-thumbnail img-responsive"
+                  style=""
+                />
+              </a>
+            </div>
+            <h4 class="title text-center">
+              <a
+                href="javascript:void(0);"
+                source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+                class="d-block _df_button"
+                rel="noopener"
+                title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                df-parsed="true"
+                >Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8,
+                tháng 4/2021</a
+              >
+            </h4>
+            <div class="actions"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3 item mb-5">
+        <div class="panel">
+          <div class="panel-body">
+            <div
+              id="image"
+              class="image text-center mb-1"
+              onclick="loadPDF(`https://administrator.lifetek.vn:203/api/files/67133113656b0b02f55e2f52`)"
+            >
+              <a
+                href="javascript:void(0);"
+                source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+                class="d-block _df_button"
+                rel="noopener"
+                title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                df-parsed="true"
+              >
+                <img
+                  src="https://administrator.lifetek.vn:203/api/files/67133207656b0b02f55e2f53"
+                  alt="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                  class="img-thumbnail img-responsive"
+                  style=""
+                />
+              </a>
+            </div>
+            <h4 class="title text-center">
+              <a
+                href="javascript:void(0);"
+                source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+                class="d-block _df_button"
+                rel="noopener"
+                title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                df-parsed="true"
+                >Các Một số vấn đề dân tộc trong tình hình mới</a
+              >
+            </h4>
+            <div class="actions"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3 item mb-5">
+        <div class="panel">
+          <div class="panel-body">
+            <div
+              id="image"
+              class="image text-center mb-1"
+              onclick="loadPDF(`https://administrator.lifetek.vn:203/api/files/671333b0656b0b02f55e2f54`)"
+            >
+              <a
+                href="javascript:void(0);"
+                source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+                class="d-block _df_button"
+                rel="noopener"
+                title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                df-parsed="true"
+              >
+                <img
+                  src="https://administrator.lifetek.vn:203/api/files/671333c3656b0b02f55e2f55"
+                  alt="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                  class="img-thumbnail img-responsive"
+                  style=""
+                />
+              </a>
+            </div>
+            <h4 class="title text-center">
+              <a
+                href="javascript:void(0);"
+                source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+                class="d-block _df_button"
+                rel="noopener"
+                title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                df-parsed="true"
+                >Các Vấn đề dân tộc trong tình hình mới</a
+              >
+            </h4>
+            <div class="actions"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3 item mb-5">
+        <div class="panel">
+          <div class="panel-body">
+            <div
+              id="image"
+              class="image text-center mb-1"
+              onclick="loadPDF(`https://administrator.lifetek.vn:203/api/files/67123ca0656b0b02f55e2f51`)"
+            >
+              <a
+                href="javascript:void(0);"
+                source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+                class="d-block _df_button"
+                rel="noopener"
+                title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                df-parsed="true"
+              >
+                <img
+                  src="https://administrator.lifetek.vn:203/api/files/671222cb656b0b02f55e2f4f"
+                  alt="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                  class="img-thumbnail img-responsive"
+                  style=""
+                />
+              </a>
+            </div>
+
+            <h4 class="title text-center">
+              <a
+                href="javascript:void(0);"
+                source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+                class="d-block _df_button"
+                rel="noopener"
+                title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                df-parsed="true"
+                >Các Ngày hội toàn dân bầu cử quốc hội khóa XV và hội đồng nhân
+                dân các cấp</a
+              >
+            </h4>
+            <div class="actions"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3 item mb-5">
+        <div class="panel">
+          <div class="panel-body">
+            <div
+              id="image"
+              class="image text-center mb-1"
+              onclick="loadPDF(`https://administrator.lifetek.vn:203/api/files/671333ea656b0b02f55e2f56`)"
+            >
+              <a
+                href="javascript:void(0);"
+                source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+                class="d-block _df_button"
+                rel="noopener"
+                title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                df-parsed="true"
+              >
+                <img
+                  src="https://administrator.lifetek.vn:203/api/files/67133427656b0b02f55e2f57"
+                  alt="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                  class="img-thumbnail img-responsive"
+                  style=""
+                />
+              </a>
+            </div>
+            <h4 class="title text-center">
+              <a
+                href="javascript:void(0);"
+                source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+                class="d-block _df_button"
+                rel="noopener"
+                title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                df-parsed="true"
+                >Các Ngày hội toàn dân bầu cử quốc hội khóa XV và hội đồng nhân
+                dân các cấp
+              </a>
+            </h4>
+            <div class="actions"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-md-3 item mb-5">
+        <div class="panel">
+          <div class="panel-body">
+            <div
+              id="image"
+              class="image text-center mb-1"
+              onclick="loadPDF(`https://administrator.lifetek.vn:203/api/files/6713346d656b0b02f55e2f59`)"
+            >
+              <a
+                href="javascript:void(0);"
+                source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+                class="d-block _df_button"
+                rel="noopener"
+                title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                df-parsed="true"
+              >
+                <img
+                  src="https://administrator.lifetek.vn:203/api/files/6713349a656b0b02f55e2f5a"
+                  alt="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                  class="img-thumbnail img-responsive"
+                  style=""
+                />
+              </a>
+            </div>
+            <h4 class="title text-center">
+              <a
+                href="javascript:void(0);"
+                source="https://administrator.lifetek.vn:203/api/files/67122331656b0b02f55e2f50"
+                class="d-block _df_button"
+                rel="noopener"
+                title="Các kết quả nghiên cứu khoa học và ứng dụng công nghệ số 8, tháng 4/2021"
+                df-parsed="true"
+                >Các Cộng đồng các dân tộc thiểu số Việt Nam hội nhập, đoàn kết
+                và phát triển</a
+              >
+            </h4>
+            <div class="actions"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<container
+  id="container_flibook"
+  class="container_flibook"
+  style="
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    z-index: 9999;
+  "
+>
+  <!-- nút back thoát khỏi màn xem pdf -->
+  <div
+      class="flipbook_click_back"
+      style="
+      height: 40px;
+      width: 40px;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        border-radius: 50%;
+        z-index: 20;
+        padding: 10px;
+        color: black
+      "
+      onclick="clickBack()"
+    >
+      <i style="display: flex;  
+        font-size: 20px; align-items: center; justify-content: center; height: 100%;" class="fa-solid fa-x"></i>
+    </div>
+  <div id="flipbook" class="flipbook">
+  
+    <!-- Các trang sẽ được thêm vào đây -->
+
+    
+  </div>
+  <!-- Nút điều hướng -->
+  <div
+  class="navigation"
+  style="
+    position: fixed;
+    z-index: 99999;
+    bottom: 10px;
+    left: 40%;
+    border-radius: 5px;
+    height: 35px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    background-color: #f7f7f7;
+    color: #888;
+    vertical-align: top;
+    font-size: 1.125rem
+  "
+>
+  <div class="icon_navigation" id="prev-page">
+    <i class="fa-solid fa-angle-left"></i>
+  </div>
+  <span class="page-info"
+    >[<span id="current-page">1</span> of
+    <span id="total-pages">0</span>]</span
+  >
+  <div class="icon_navigation" id="next-page">
+    <i class="fa-solid fa-angle-right"></i>
+  </div>
+  <div class="icon_navigation" id="next-page">
+    <i class="fas fa-border-all"></i>
+  </div>
+  <div class="icon_navigation" id="zoomInBtn">
+    <i class="fa-solid fa-magnifying-glass-plus"></i>
+  </div>
+  <div class="icon_navigation" id="zoomOutBtn">
+    <i class="fa-solid fa-magnifying-glass-minus"></i>
+  </div>
+</div>
+</container>
+
+<script>
+ // thoát xem pdf
+ async function clickBack() {
+    // Ẩn container của flipbook và hiển thị lại container chính
+    $(".container_flibook").hide()
+    $(".container1").show();
+
+    // // Kiểm tra xem `flipbook` đã được khởi tạo chưa
+    // if (window.flipbook) {
+    //     // Xóa toàn bộ đối tượng `flipbook` để giải phóng bộ nhớ và loại bỏ trạng thái trang cũ
+    //     window.flipbook.destroy();  
+    //     window.flipbook = null;  // Đặt lại về null để khi vào lại sẽ khởi tạo lại từ đầu
+    // }
+    // // Xóa các trang PDF cũ khỏi DOM mà không ảnh hưởng đến cấu hình thẻ
+    // $("#flipbook .page").remove();  // Chỉ xóa các phần tử .page bên trong `flipbook`
+
+    // // Đảm bảo `flipbook` không lưu trạng thái cũ khi xem PDF mới
+    // if (window.pdfDocument) {
+    //     window.pdfDocument = null; // Xóa bộ nhớ cache của PDF hiện tại
+    // }
+}
+async function loadPDF(pdfUrl) {
+    document.getElementById("loading-screen").style.display = "flex";
+    $("#flipbook").hide();
+    $("#screen_an_pham").hide();
+    $(".container1").hide();
+
+    let loadingTask = pdfjsLib.getDocument(pdfUrl);
+console.log('loadingTask', loadingTask);
+
+    try {
+        const pdf = await loadingTask.promise;
+        console.log('pdf', pdf);
+        
+        $(".container_flibook").show();
+
+        const totalPages = pdf.numPages;
+        document.getElementById("total-pages").textContent = totalPages;
+        document.getElementById("current-page").textContent = 1; // Reset current page
+
+        const flipbookContainer = $("#flipbook");
+        flipbookContainer.empty(); // Đảm bảo rằng flipbook không chứa trang cũ
+      console.log('flipbookContainer', flipbookContainer);
+      
+        // Render các trang PDF đầu tiên
+        for (let pageNum = 1; pageNum <= Math.min(5, totalPages); pageNum++) {
+            await renderPage(pdf, pageNum, flipbookContainer);
+        }
+
+        // Chỉ khởi tạo PageFlip sau khi các trang đã được thêm vào DOM
+        if (document.querySelectorAll(".page").length > 0) {
+            window.flipbook = new St.PageFlip(
+                document.getElementById("flipbook"),
+                {
+                    width: 600,
+                    height: 800,
+                    size: "stretch",
+                    minWidth: 600,
+                    minHeight: 800,
+                    maxWidth: 1000,
+                    maxHeight: 1400,
+                    maxShadowOpacity: 0.5,
+                    showCover: true,
+                    mobileScrollSupport: false,
+                    useMouseEvents: true,
+                    flippingTime: 700,
+                }
+            );
+                console.log('window.flipbook 111', window.flipbook);
+                
+            window.flipbook.loadFromHTML(document.querySelectorAll(".page"));
+            document.getElementById("loading-screen").style.display = "none"; // Ẩn màn hình loading sau khi khởi tạo thành công
+            console.log('window.flipbook 1222222', window.flipbook);
+            // Sự kiện lật trang
+            window.flipbook.on("flip", async (e) => {
+                document.getElementById("current-page").textContent = window.flipbook.getCurrentPageIndex() + 1;
+                
+                const currentPage = window.flipbook.getCurrentPageIndex() + 1;
+
+                // Nếu sắp đến trang cuối, tải thêm các trang tiếp theo
+                if (currentPage >= window.flipbook.getPageCount() - 2 && currentPage < totalPages) {
+                    const savedPage = window.flipbook.getCurrentPageIndex();
+
+                    for (let pageNum = currentPage + 1; pageNum <= Math.min(currentPage + 5, totalPages); pageNum++) {
+                        await renderPage(pdf, pageNum, flipbookContainer);
+                    }
+
+                    window.flipbook.loadFromHTML(document.querySelectorAll(".page"));
+                    window.flipbook.flip(savedPage);
+                }
+            });
+        } else {
+            console.error("Error: No pages added to DOM. PageFlip cannot be initialized.");
+            document.getElementById("loading-screen").style.display = "none"; // Ẩn loading nếu có lỗi
+        }
+    } catch (error) {
+        console.error("Error loading PDF: ", error);
+        document.getElementById("loading-screen").style.display = "none"; // Ẩn loading nếu có lỗi
+    }
+}
+
+  // Hàm render trang PDF và chuyển thành hình ảnh
+  async function renderPage(pdf, pageNum, container) {
+    const page = await pdf.getPage(pageNum);
+    const viewport = page.getViewport({ scale: 1.5 }); // Tăng scale để phù hợp kích thước A4
+    const canvas = document.createElement("canvas");
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    const context = canvas.getContext("2d");
+    const renderContext = {
+      canvasContext: context,
+      viewport: viewport,
+    };
+
+    await page.render(renderContext).promise;
+
+    const img = document.createElement("img");
+    img.src = canvas.toDataURL(); // Chuyển đổi canvas thành hình ảnh
+    const pageDiv = $('<div id="pdfIframe"  class="page"></div>');
+    console.log('pageDiv', pageDiv);
+    
+    pageDiv.append(img);
+    container.append(pageDiv);
+    console.log('pageDiv222222222', pageDiv);
+
+  }
+
+
+  async function showScreen() {
+    $("#screen_an_pham").hide();
+    $(".container1").show();
+    history.pushState({ page: "detail_an_pham" }, "", "#screen_an_pham");
+  }
+
+  window.onpopstate = function (event) {
+    if (event.state && event.state.page === "detail_an_pham") {
+      // Nếu trạng thái là chi tiết ấn phẩm, hiển thị phần chi tiết
+      $("#screen_an_pham").hide();
+      $(".container1").show();
+    } else {
+      // Nếu trạng thái là màn hình chính, hiển thị phần chính
+      $("#screen_an_pham").show();
+      $(".container1").hide();
+    }
+  };
+
+
+  let zoomLevel = 1; // Bắt đầu với zoom mặc định là 1
+        const zoomStep = 0.1; // Mỗi lần zoom tăng hoặc giảm 0.1
+        const minZoom = 1;  // Giới hạn nhỏ nhất
+        const maxZoom = 2;    // Giới hạn lớn nhất
+
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const pdfIframe = document.getElementById('flipbook');
+
+        // Hàm để thay đổi kích thước iframe PDF khi zoom
+        function updateZoom() {
+            pdfIframe.style.transform = `scale(${zoomLevel})`;  // Zoom theo tỷ lệ
+            pdfIframe.style.transformOrigin = '50% 50%';            // Đặt điểm gốc khi zoom
+        }
+
+        // Xử lý khi nhấn nút Zoom In
+        zoomInBtn.addEventListener('click', function() {
+            if (zoomLevel < maxZoom) {
+                zoomLevel += zoomStep;
+                updateZoom();
+            }
+        });
+
+        // Xử lý khi nhấn nút Zoom Out
+        zoomOutBtn.addEventListener('click', function() {
+            if (zoomLevel > minZoom) {
+                zoomLevel -= zoomStep;
+                updateZoom();
+            }
+        });
+
+  // Tải file PDF khi trang đã sẵn sàng
+  $(document).ready(function () {
+    // loadPDF(pdfUrl);
+
+    // Điều hướng trang tiếp theo
+    $("#next-page").on("click", function () {
+      window.flipbook.flipNext();
+    });
+
+    // Điều hướng trang trước
+    $("#prev-page").on("click", function () {
+      window.flipbook.flipPrev();
+    });
+    $(".img_page_pdf").on("click", function () {
+      $("#flipbook_page").show();
+    });
+  });
+</script>
